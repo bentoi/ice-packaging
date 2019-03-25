@@ -17,8 +17,11 @@
 %endif
 
 #
-# SLES12 does not define %{dist}
+# SLES does not define %{dist}
 #
+%if 0%{?suse_version} == 1110
+%global dist                  .sles11
+%endif
 %if 0%{?suse_version} == 1315
 %global dist                  .sles12
 %endif
@@ -44,6 +47,13 @@
    %define pythondir %{python27_sitearch}
 %endif
 
+%if "%{dist}" == ".sles11"
+   %define systemdpkg systemd-rpm-macros
+   %define shadow shadow
+   %define phpdir %{_datadir}/php5
+   %define phpcommon php5
+   %define phplibdir %{_libdir}/php5/extensions
+%endif
 %if "%{dist}" == ".sles12"
    %define systemdpkg systemd-rpm-macros
    %define phpdevel php5-devel
@@ -78,6 +88,14 @@ URL: https://zeroc.com/
 Source0: https://github.com/zeroc-ice/ice/archive/%{archive_tag}/%{name}-%{version}.tar.gz
 Source1: https://github.com/zeroc-ice/ice-packaging/archive/%{archive_tag}/%{name}-packaging-%{version}.tar.gz
 
+%if "%{dist}" == ".sles11"
+BuildRequires: libexpat-devel >= 2.0
+BuildRequires: liblmdb-devel
+BuildRequires: openssl-devel >= 0.9.7a
+BuildRequires: mcpp-devel >= 2.7.2
+BuildRequires: libbz2-devel >= 1.0.5
+BuildRequires: php53-devel >= 5.3.0
+%else
 BuildRequires: pkgconfig(expat), pkgconfig(lmdb), pkgconfig(mcpp), pkgconfig(openssl), %{bzip2devel}
 %if %{systemd}
 BuildRequires: %{systemddevel}
@@ -86,6 +104,7 @@ BuildRequires: %{systemddevel}
 BuildRequires: pkgconfig(python-2.7), %{phpdevel}, %{javapackagestools}
 %if "%{dist}" == ".amzn2"
 BuildRequires: pkgconfig(python-3.7), python3-rpm-macros
+%endif
 %endif
 %endif
 
@@ -506,7 +525,7 @@ rm -f %{buildroot}%{_bindir}/slice2confluence
 #
 # php ice.ini
 #
-%if "%{dist}" == ".sles12"
+%if "%{dist}" == ".sles11" || "%{dist}" == ".sles12"
     mkdir -p %{buildroot}%{_sysconfdir}/php5/conf.d
     cp -p %{rpmbuildfiles}/ice.ini %{buildroot}%{_sysconfdir}/php5/conf.d
 %else
@@ -934,7 +953,7 @@ exit 0
 %doc %{rpmbuildfiles}/README
 %{phpdir}
 %{phplibdir}/ice.so
-%if "%{dist}" == ".sles12"
+%if "%{dist}" == ".sles11" || "%{dist}" == ".sles12"
 %config(noreplace) %{_sysconfdir}/php5/conf.d/ice.ini
 %else
 %config(noreplace) %{_sysconfdir}/php.d/ice.ini

@@ -2,13 +2,17 @@
 %global archive_path libraries/lib%{name}
 
 #
-# SLES12 does not define %{dist}
+# SLES does not define %{dist}
 #
+%if 0%{?suse_version} == 1110
+%global dist                  .sles11
+%endif
 %if 0%{?suse_version} == 1315
 %global dist                  .sles12
 %endif
 
 Name:           lmdb
+Group:          System Environment/Libraries
 Version:        0.9.22
 Release:        1ice%{?dist}
 Summary:        Memory-mapped key-value database
@@ -90,14 +94,14 @@ popd
 %files
 %doc %{archive_path}/COPYRIGHT
 %doc %{archive_path}/CHANGES
-%license %{archive_path}/LICENSE
+%doc %{archive_path}/LICENSE
 %{_bindir}/*
 %{_mandir}/man1/*
 
 %files devel
 %doc %{archive_path}/COPYRIGHT
 %doc %{archive_path}/CHANGES
-%license %{archive_path}/LICENSE
+%doc %{archive_path}/LICENSE
 %{_includedir}/*
 %{_libdir}/*.a
 %{_libdir}/pkgconfig/*.pc
