@@ -32,6 +32,7 @@ to the size of the virtual address space.
 %define debug_package %{nil}
 
 %package        devel
+Group:          System Environment/Libraries
 Summary:        Development files for %{name}
 Provides:       %{name}-static = %{version}-%{release}
 Requires:       pkgconfig
