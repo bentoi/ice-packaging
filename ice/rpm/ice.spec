@@ -88,6 +88,8 @@ URL: https://zeroc.com/
 Source0: https://github.com/zeroc-ice/ice/archive/%{archive_tag}/%{name}-%{version}.tar.gz
 Source1: https://github.com/zeroc-ice/ice-packaging/archive/%{archive_tag}/%{name}-packaging-%{version}.tar.gz
 
+BuildRoot: %{_tmppath}/ice-%{version}-%{release}-root-%(%{__id_u} -n)
+
 %if "%{dist}" == ".sles11"
 BuildRequires: libexpat-devel >= 2.0
 BuildRequires: lmdb-devel
