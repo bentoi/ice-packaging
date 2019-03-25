@@ -71,7 +71,7 @@ rm %{buildroot}%{_libdir}/*.so
 popd
 
 # create pkgconfig file
-mkdir %{buildroot}%{_libdir}/pkgconfig
+mkdir -m 0755 -p %{buildroot}%{_libdir}/pkgconfig
 cat << "EOF" > %{buildroot}%{_libdir}/pkgconfig/%{name}.pc
 prefix=/usr
 exec_prefix=${prefix}
