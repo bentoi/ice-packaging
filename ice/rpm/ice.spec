@@ -573,15 +573,15 @@ rm -rf %{buildroot}%{_datadir}/ice
 #
 
 %files -n %{?nameprefix}ice-slice
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %dir %{_datadir}/ice
 %{_datadir}/ice/slice
 
 %files -n %{?nameprefix}icegridgui
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %license %{rpmbuildfiles}/JGOODIES_LICENSE
 %doc %{rpmbuildfiles}/README
 %attr(755,root,root) %{_bindir}/icegridgui
@@ -597,24 +597,24 @@ rm -rf %{buildroot}%{_datadir}/ice
 # Generate "ice-all-runtime" meta package as arch-specific
 #
 %files -n %{?nameprefix}ice-all-runtime
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 
 #
 # Generate "ice-all-devel" meta package as arch-specific
 #
 %files -n %{?nameprefix}ice-all-devel
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 
 #
 # libice-Mm-c++ package
 #
 %files -n lib%{?nameprefix}ice3.7-c++
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %license %{rpmbuildfiles}/MCPP_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_libdir}/libGlacier2.so.*
@@ -648,8 +648,8 @@ exit 0
 # icebox package
 #
 %files -n %{?nameprefix}icebox
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %ifarch %{_host_cpu}
 %{_bindir}/icebox
@@ -670,8 +670,8 @@ exit 0
 # libice-c++devel package
 #
 %files -n lib%{?nameprefix}ice-c++-devel
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_libdir}/libGlacier2.so
 %{_libdir}/libIce.so
@@ -705,8 +705,8 @@ exit 0
 # libicestorm-Mm package
 #
 %files -n lib%{?nameprefix}icestorm3.7
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_libdir}/libIceStormService.so.*
 %post -n lib%{?nameprefix}icestorm3.7 -p /sbin/ldconfig
@@ -720,8 +720,8 @@ exit 0
 # ice-compilers package
 #
 %files -n %{?nameprefix}ice-compilers
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/slice2cpp
 %{_mandir}/man1/slice2cpp.1*
@@ -748,8 +748,8 @@ exit 0
 # ice-utils package
 #
 %files -n %{?nameprefix}ice-utils
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/iceboxadmin
 %{_mandir}/man1/iceboxadmin.1*
@@ -774,8 +774,8 @@ exit 0
 # icegrid package
 #
 %files -n %{?nameprefix}icegrid
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/icegridnode
 %{_mandir}/man1/icegridnode.1*
@@ -856,8 +856,8 @@ exit 0
 # glacier2 package
 #
 %files -n %{?nameprefix}glacier2
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/glacier2router
 %{_mandir}/man1/glacier2router.1*
@@ -920,8 +920,8 @@ exit 0
 # icebridge package
 #
 %files -n %{?nameprefix}icebridge
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/icebridge
 %{_mandir}/man1/icebridge.1*
@@ -934,8 +934,8 @@ exit 0
 # icepatch2 package
 #
 %files -n %{?nameprefix}icepatch2
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/icepatch2server
 %{_mandir}/man1/icepatch2server.1*
@@ -948,8 +948,8 @@ exit 0
 # php-ice package
 #
 %files -n php-%{?nameprefix}ice
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{phpdir}
 %{phplibdir}/ice.so
@@ -963,8 +963,8 @@ exit 0
 # python-ice package
 #
 %files -n %{pythonname}-%{?nameprefix}ice
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{pythondir}/*
 
@@ -973,8 +973,8 @@ exit 0
 # python3-ice package
 #
 %files -n python3-%{?nameprefix}ice
-%license LICENSE
-%license ICE_LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
+%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{python3_sitearch}/*
 %endif
