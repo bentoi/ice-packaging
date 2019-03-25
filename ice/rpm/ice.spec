@@ -90,7 +90,7 @@ Source1: https://github.com/zeroc-ice/ice-packaging/archive/%{archive_tag}/%{nam
 
 %if "%{dist}" == ".sles11"
 BuildRequires: libexpat-devel >= 2.0
-BuildRequires: liblmdb-devel
+BuildRequires: lmdb-devel
 BuildRequires: openssl-devel >= 0.9.7a
 BuildRequires: mcpp-devel >= 2.7.2
 BuildRequires: libbz2-devel >= 1.0.5
