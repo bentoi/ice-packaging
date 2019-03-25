@@ -66,6 +66,7 @@
 Name: %{?nameprefix}ice
 Version: 3.7.2
 Summary: Comprehensive RPC framework with support for C++, Java, JavaScript, Python and more.
+Group: System Environment/Libraries
 Release: 1%{?dist}
 %if "%{?ice_license}"
 License: %{ice_license}
