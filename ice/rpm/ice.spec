@@ -50,9 +50,6 @@
 %if "%{dist}" == ".sles11"
    %define systemdpkg systemd-rpm-macros
    %define shadow shadow
-   %define phpdir %{_datadir}/php5
-   %define phpcommon php5
-   %define phplibdir %{_libdir}/php5/extensions
 %endif
 %if "%{dist}" == ".sles12"
    %define systemdpkg systemd-rpm-macros
@@ -99,7 +96,6 @@ BuildRequires: lmdb-devel
 BuildRequires: openssl-devel >= 0.9.7a
 BuildRequires: mcpp-devel >= 2.7.2
 BuildRequires: libbz2-devel >= 1.0.5
-BuildRequires: php53-devel >= 5.3.0
 %else
 BuildRequires: pkgconfig(expat), pkgconfig(lmdb), pkgconfig(mcpp), pkgconfig(openssl), %{bzip2devel}
 %if %{systemd}
@@ -176,13 +172,13 @@ Requires: %{?nameprefix}glacier2%{?_isa} = %{version}-%{release}
 Requires: %{?nameprefix}icegrid%{?_isa} = %{version}-%{release}
 Requires: %{?nameprefix}icepatch2%{?_isa} = %{version}-%{release}
 Requires: %{?nameprefix}icebridge%{?_isa} = %{version}-%{release}
-Requires: php-%{?nameprefix}ice%{?_isa} = %{version}-%{release}
-Requires: %{pythonname}-%{?nameprefix}ice%{?_isa} = %{version}-%{release}
+#Requires: php-%{?nameprefix}ice%{?_isa} = %{version}-%{release}
+#Requires: %{pythonname}-%{?nameprefix}ice%{?_isa} = %{version}-%{release}
 %if "%{dist}" == ".amzn2"
 Requires: python3-%{?nameprefix}ice%{?_isa} = %{version}-%{release}
 %endif
 Requires: lib%{?nameprefix}ice3.7-c++%{?_isa} = %{version}-%{release}
-Requires: %{?nameprefix}icegridgui = %{version}-%{release}
+#Requires: %{?nameprefix}icegridgui = %{version}-%{release}
 %endif # %{_host_cpu}
 %description -n %{?nameprefix}ice-all-runtime
 This is a meta package that depends on all run-time packages for Ice.
@@ -427,41 +423,41 @@ your application logic.
 #
 # php-ice package
 #
-%package -n php-%{?nameprefix}ice
-Summary: PHP extension for Ice.
-Group: System Environment/Libraries
-Obsoletes: ice-php < 3.6
-Requires: lib%{?nameprefix}ice3.7-c++%{?_isa} = %{version}-%{release}
-%if "%{dist}" == ".amzn1"
-Requires: php-common%{?_isa} < 5.4
-%else
-Requires: %{phpcommon}%{?_isa}
-%endif
-
-%description -n php-%{?nameprefix}ice
-This package contains a PHP extension for communicating with Ice.
-
-Ice is a comprehensive RPC framework that helps you network your software
-with minimal effort. Ice takes care of all interactions with low-level
-network programming interfaces and allows you to focus your efforts on
-your application logic.
+#%package -n php-%{?nameprefix}ice
+#Summary: PHP extension for Ice.
+#Group: System Environment/Libraries
+#Obsoletes: ice-php < 3.6
+#Requires: lib%{?nameprefix}ice3.7-c++%{?_isa} = %{version}-%{release}
+#%if "%{dist}" == ".amzn1"
+#Requires: php-common%{?_isa} < 5.4
+#%else
+#Requires: %{phpcommon}%{?_isa}
+#%endif
+#
+#%description -n php-%{?nameprefix}ice
+#This package contains a PHP extension for communicating with Ice.
+#
+#Ice is a comprehensive RPC framework that helps you network your software
+#with minimal effort. Ice takes care of all interactions with low-level
+#network programming interfaces and allows you to focus your efforts on
+#your application logic.
 
 #
 # python-ice package
 #
-%package -n %{pythonname}-%{?nameprefix}ice
-Summary: Python extension for Ice.
-Group: System Environment/Libraries
-Obsoletes: ice-python < 3.6
-Requires: lib%{?nameprefix}ice3.7-c++%{?_isa} = %{version}-%{release}
-Requires: %{pythonname}
-%description -n %{pythonname}-%{?nameprefix}ice
-This package contains a Python extension for communicating with Ice.
-
-Ice is a comprehensive RPC framework that helps you network your software
-with minimal effort. Ice takes care of all interactions with low-level
-network programming interfaces and allows you to focus your efforts on
-your application logic.
+#%package -n %{pythonname}-%{?nameprefix}ice
+#Summary: Python extension for Ice.
+#Group: System Environment/Libraries
+#Obsoletes: ice-python < 3.6
+#Requires: lib%{?nameprefix}ice3.7-c++%{?_isa} = %{version}-%{release}
+#Requires: %{pythonname}
+#%description -n %{pythonname}-%{?nameprefix}ice
+#This package contains a Python extension for communicating with Ice.
+#
+#Ice is a comprehensive RPC framework that helps you network your software
+#with minimal effort. Ice takes care of all interactions with low-level
+#network programming interfaces and allows you to focus your efforts on
+#your application logic.
 
 %if "%{dist}" == ".amzn2"
 #
@@ -496,7 +492,7 @@ export CXXFLAGS="%{optflags}"
 export LDFLAGS="%{?__global_ldflags}"
 
 %ifnarch %{ix86}
-    make %{makebuildopts} PYTHON=python LANGUAGES="cpp php python" srcs
+    make %{makebuildopts} LANGUAGES="cpp" srcs
     %if "%{dist}" == ".amzn2"
         make %{makebuildopts} PYTHON=python3 -C python3 srcs
     %endif
@@ -509,8 +505,8 @@ export LDFLAGS="%{?__global_ldflags}"
 %ifnarch %{ix86}
     make           %{?_smp_mflags} %{makeinstallopts} install-slice
     make -C cpp    %{?_smp_mflags} %{makeinstallopts} install
-    make -C php    %{?_smp_mflags} %{makeinstallopts} install
-    make -C python %{?_smp_mflags} %{makeinstallopts} PYTHON=python install_pythondir=%{pythondir} install
+#    make -C php    %{?_smp_mflags} %{makeinstallopts} install
+#    make -C python %{?_smp_mflags} %{makeinstallopts} PYTHON=python install_pythondir=%{pythondir} install
     %if "%{dist}" == ".amzn2"
         make -C python3 %{?_smp_mflags} %{makeinstallopts} PYTHON=python3 install_pythondir=%{python3_sitearch} install
     %endif
@@ -527,13 +523,13 @@ rm -f %{buildroot}%{_bindir}/slice2confluence
 #
 # php ice.ini
 #
-%if "%{dist}" == ".sles11" || "%{dist}" == ".sles12"
-    mkdir -p %{buildroot}%{_sysconfdir}/php5/conf.d
-    cp -p %{rpmbuildfiles}/ice.ini %{buildroot}%{_sysconfdir}/php5/conf.d
-%else
-    mkdir -p %{buildroot}%{_sysconfdir}/php.d
-    cp -p %{rpmbuildfiles}/ice.ini %{buildroot}%{_sysconfdir}/php.d
-%endif
+#%if "%{dist}" == ".sles11" || "%{dist}" == ".sles12"
+#    mkdir -p %{buildroot}%{_sysconfdir}/php5/conf.d
+#    cp -p %{rpmbuildfiles}/ice.ini %{buildroot}%{_sysconfdir}/php5/conf.d
+#%else
+#    mkdir -p %{buildroot}%{_sysconfdir}/php.d
+#    cp -p %{rpmbuildfiles}/ice.ini %{buildroot}%{_sysconfdir}/php.d
+#%endif
 
 #
 # initrd files (for servers)
@@ -929,26 +925,26 @@ exit 0
 #
 # php-ice package
 #
-%files -n php-%{?nameprefix}ice
+#%files -n php-%{?nameprefix}ice
 #%license LICENSE
 #%license ICE_LICENSE
-%doc %{rpmbuildfiles}/README
-%{phpdir}
-%{phplibdir}/ice.so
-%if "%{dist}" == ".sles11" || "%{dist}" == ".sles12"
-%config(noreplace) %{_sysconfdir}/php5/conf.d/ice.ini
-%else
-%config(noreplace) %{_sysconfdir}/php.d/ice.ini
-%endif
+#%doc %{rpmbuildfiles}/README
+#%{phpdir}
+#%{phplibdir}/ice.so
+#%if "%{dist}" == ".sles11" || "%{dist}" == ".sles12"
+#%config(noreplace) %{_sysconfdir}/php5/conf.d/ice.ini
+#%else
+#%config(noreplace) %{_sysconfdir}/php.d/ice.ini
+#%endif
 
 #
 # python-ice package
 #
-%files -n %{pythonname}-%{?nameprefix}ice
+#%files -n %{pythonname}-%{?nameprefix}ice
 #%license LICENSE
 #%license ICE_LICENSE
-%doc %{rpmbuildfiles}/README
-%{pythondir}/*
+#%doc %{rpmbuildfiles}/README
+#%{pythondir}/*
 
 %if "%{dist}" == ".amzn2"
 #
