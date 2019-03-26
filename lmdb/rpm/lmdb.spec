@@ -2,13 +2,17 @@
 %global archive_path libraries/lib%{name}
 
 #
-# SLES12 does not define %{dist}
+# SLES does not define %{dist}
 #
+%if 0%{?suse_version} == 1110
+%global dist                  .sles11
+%endif
 %if 0%{?suse_version} == 1315
 %global dist                  .sles12
 %endif
 
 Name:           lmdb
+Group:          System Environment/Libraries
 Version:        0.9.22
 Release:        1ice%{?dist}
 Summary:        Memory-mapped key-value database
@@ -16,6 +20,8 @@ Summary:        Memory-mapped key-value database
 License:        OpenLDAP
 URL:            http://symas.com/mdb/
 Source:         https://github.com/LMDB/lmdb/archive/LMDB_%{version}.tar.gz
+
+BuildRoot: %{_tmppath}/lmdb-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
 LMDB is an ultra-fast, ultra-compact key-value embedded data
@@ -28,6 +34,7 @@ to the size of the virtual address space.
 %define debug_package %{nil}
 
 %package        devel
+Group:          System Environment/Libraries
 Summary:        Development files for %{name}
 Provides:       %{name}-static = %{version}-%{release}
 Requires:       pkgconfig
@@ -66,7 +73,7 @@ rm %{buildroot}%{_libdir}/*.so
 popd
 
 # create pkgconfig file
-mkdir %{buildroot}%{_libdir}/pkgconfig
+mkdir -m 0755 -p %{buildroot}%{_libdir}/pkgconfig
 cat << "EOF" > %{buildroot}%{_libdir}/pkgconfig/%{name}.pc
 prefix=/usr
 exec_prefix=${prefix}
@@ -90,14 +97,14 @@ popd
 %files
 %doc %{archive_path}/COPYRIGHT
 %doc %{archive_path}/CHANGES
-%license %{archive_path}/LICENSE
+%doc %{archive_path}/LICENSE
 %{_bindir}/*
 %{_mandir}/man1/*
 
 %files devel
 %doc %{archive_path}/COPYRIGHT
 %doc %{archive_path}/CHANGES
-%license %{archive_path}/LICENSE
+%doc %{archive_path}/LICENSE
 %{_includedir}/*
 %{_libdir}/*.a
 %{_libdir}/pkgconfig/*.pc

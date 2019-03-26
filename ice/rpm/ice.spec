@@ -17,8 +17,11 @@
 %endif
 
 #
-# SLES12 does not define %{dist}
+# SLES does not define %{dist}
 #
+%if 0%{?suse_version} == 1110
+%global dist                  .sles11
+%endif
 %if 0%{?suse_version} == 1315
 %global dist                  .sles12
 %endif
@@ -44,6 +47,11 @@
    %define pythondir %{python27_sitearch}
 %endif
 
+%if "%{dist}" == ".sles11"
+   %define systemd 0
+   %define systemdpkg systemd-rpm-macros
+   %define shadow shadow
+%endif
 %if "%{dist}" == ".sles12"
    %define systemdpkg systemd-rpm-macros
    %define phpdevel php5-devel
@@ -60,12 +68,16 @@
    %define runpath embedded_runpath_prefix=%{_prefix}
 %endif
 
-%define makebuildopts CONFIGS="shared cpp11-shared" OPTIMIZE=yes V=1 %{runpath} %{?_smp_mflags}
-%define makeinstallopts CONFIGS="shared cpp11-shared" OPTIMIZE=yes V=1 %{runpath} DESTDIR=%{buildroot} prefix=%{_prefix} install_bindir=%{_bindir} install_libdir=%{_libdir} install_slicedir=%{_datadir}/ice/slice install_includedir=%{_includedir} install_mandir=%{_mandir} install_configdir=%{_datadir}/ice install_javadir=%{_javadir} install_phplibdir=%{phplibdir} install_phpdir=%{phpdir}
+#
+# Don't build slice2js and the C++11 mapping because of compiler errors.
+#
+%define makebuildopts CONFIGS="shared" OPTIMIZE=yes SKIP=slice2js V=1 %{runpath} %{?_smp_mflags}
+%define makeinstallopts CONFIGS="shared" OPTIMIZE=yes SKIP=slice2js V=1 %{runpath} DESTDIR=%{buildroot} prefix=%{_prefix} install_bindir=%{_bindir} install_libdir=%{_libdir} install_slicedir=%{_datadir}/ice/slice install_includedir=%{_includedir} install_mandir=%{_mandir} install_configdir=%{_datadir}/ice install_javadir=%{_javadir} install_phplibdir=%{phplibdir} install_phpdir=%{phpdir}
 
 Name: %{?nameprefix}ice
 Version: 3.7.2
 Summary: Comprehensive RPC framework with support for C++, Java, JavaScript, Python and more.
+Group: System Environment/Libraries
 Release: 1%{?dist}
 %if "%{?ice_license}"
 License: %{ice_license}
@@ -77,14 +89,24 @@ URL: https://zeroc.com/
 Source0: https://github.com/zeroc-ice/ice/archive/%{archive_tag}/%{name}-%{version}.tar.gz
 Source1: https://github.com/zeroc-ice/ice-packaging/archive/%{archive_tag}/%{name}-packaging-%{version}.tar.gz
 
+BuildRoot: %{_tmppath}/ice-%{version}-%{release}-root-%(%{__id_u} -n)
+
+%if "%{dist}" == ".sles11"
+BuildRequires: libexpat-devel >= 2.0
+BuildRequires: lmdb-devel
+BuildRequires: openssl-devel >= 0.9.7a
+BuildRequires: mcpp-devel >= 2.7.2
+BuildRequires: libbz2-devel >= 1.0.5
+%else
 BuildRequires: pkgconfig(expat), pkgconfig(lmdb), pkgconfig(mcpp), pkgconfig(openssl), %{bzip2devel}
 %if %{systemd}
 BuildRequires: %{systemddevel}
 %endif
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 BuildRequires: pkgconfig(python-2.7), %{phpdevel}, %{javapackagestools}
 %if "%{dist}" == ".amzn2"
 BuildRequires: pkgconfig(python-3.7), python3-rpm-macros
+%endif
 %endif
 %endif
 
@@ -98,7 +120,7 @@ Not used
 %debug_package
 %endif
 
-%ifarch %{_host_cpu} # We build noarch packages only on %{_host_cpu}
+%ifnarch %{ix86}
 
 #
 # ice-slice package
@@ -118,23 +140,23 @@ your application logic.
 #
 # icegridgui package
 #
-%package -n %{?nameprefix}icegridgui
-Summary: IceGrid GUI admin client.
-Group: Applications/System
-BuildArch: noarch
-Obsoletes: ice-utils < 3.6, %{?nameprefix}ice-utils-java < 3.7
-Requires: java
-%description -n %{?nameprefix}icegridgui
-The IceGrid service helps you locate, deploy and manage Ice servers.
+#%package -n %{?nameprefix}icegridgui
+#Summary: IceGrid GUI admin client.
+#Group: Applications/System
+#BuildArch: noarch
+#Obsoletes: ice-utils < 3.6, %{?nameprefix}ice-utils-java < 3.7
+#Requires: java
+#%description -n %{?nameprefix}icegridgui
+#The IceGrid service helps you locate, deploy and manage Ice servers.
 
-IceGridGUI gives you complete control over your deployed applications.
-Activities such as starting a server or modifying a configuration setting
-are just a mouse click away.
+#IceGridGUI gives you complete control over your deployed applications.
+#Activities such as starting a server or modifying a configuration setting
+#are just a mouse click away.
 
-Ice is a comprehensive RPC framework that helps you network your software
-with minimal effort. Ice takes care of all interactions with low-level
-network programming interfaces and allows you to focus your efforts on
-your application logic.
+#Ice is a comprehensive RPC framework that helps you network your software
+#with minimal effort. Ice takes care of all interactions with low-level
+#network programming interfaces and allows you to focus your efforts on
+#your application logic.
 
 %endif
 
@@ -146,18 +168,18 @@ Summary: Ice run-time packages (meta package).
 Group: System Environment/Libraries
 Requires: %{?nameprefix}icebox%{?_isa} = %{version}-%{release}
 Requires: lib%{?nameprefix}icestorm3.7%{?_isa} = %{version}-%{release}
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 Requires: %{?nameprefix}glacier2%{?_isa} = %{version}-%{release}
 Requires: %{?nameprefix}icegrid%{?_isa} = %{version}-%{release}
 Requires: %{?nameprefix}icepatch2%{?_isa} = %{version}-%{release}
 Requires: %{?nameprefix}icebridge%{?_isa} = %{version}-%{release}
-Requires: php-%{?nameprefix}ice%{?_isa} = %{version}-%{release}
-Requires: %{pythonname}-%{?nameprefix}ice%{?_isa} = %{version}-%{release}
+#Requires: php-%{?nameprefix}ice%{?_isa} = %{version}-%{release}
+#Requires: %{pythonname}-%{?nameprefix}ice%{?_isa} = %{version}-%{release}
 %if "%{dist}" == ".amzn2"
 Requires: python3-%{?nameprefix}ice%{?_isa} = %{version}-%{release}
 %endif
 Requires: lib%{?nameprefix}ice3.7-c++%{?_isa} = %{version}-%{release}
-Requires: %{?nameprefix}icegridgui = %{version}-%{release}
+#Requires: %{?nameprefix}icegridgui = %{version}-%{release}
 %endif # %{_host_cpu}
 %description -n %{?nameprefix}ice-all-runtime
 This is a meta package that depends on all run-time packages for Ice.
@@ -254,7 +276,7 @@ Summary: Libraries and headers for developing Ice applications in C++.
 Group: Development/Tools
 Obsoletes: ice-c++-devel < 3.6
 Requires: lib%{?nameprefix}ice3.7-c++%{?_isa} = %{version}-%{release}
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 Requires: %{?nameprefix}ice-compilers%{?_isa} = %{version}-%{release}
 %else
     %ifarch %{ix86}
@@ -271,7 +293,7 @@ with minimal effort. Ice takes care of all interactions with low-level
 network programming interfaces and allows you to focus your efforts on
 your application logic.
 
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 
 #
 # ice-compilers package
@@ -402,41 +424,41 @@ your application logic.
 #
 # php-ice package
 #
-%package -n php-%{?nameprefix}ice
-Summary: PHP extension for Ice.
-Group: System Environment/Libraries
-Obsoletes: ice-php < 3.6
-Requires: lib%{?nameprefix}ice3.7-c++%{?_isa} = %{version}-%{release}
-%if "%{dist}" == ".amzn1"
-Requires: php-common%{?_isa} < 5.4
-%else
-Requires: %{phpcommon}%{?_isa}
-%endif
-
-%description -n php-%{?nameprefix}ice
-This package contains a PHP extension for communicating with Ice.
-
-Ice is a comprehensive RPC framework that helps you network your software
-with minimal effort. Ice takes care of all interactions with low-level
-network programming interfaces and allows you to focus your efforts on
-your application logic.
+#%package -n php-%{?nameprefix}ice
+#Summary: PHP extension for Ice.
+#Group: System Environment/Libraries
+#Obsoletes: ice-php < 3.6
+#Requires: lib%{?nameprefix}ice3.7-c++%{?_isa} = %{version}-%{release}
+#%if "%{dist}" == ".amzn1"
+#Requires: php-common%{?_isa} < 5.4
+#%else
+#Requires: %{phpcommon}%{?_isa}
+#%endif
+#
+#%description -n php-%{?nameprefix}ice
+#This package contains a PHP extension for communicating with Ice.
+#
+#Ice is a comprehensive RPC framework that helps you network your software
+#with minimal effort. Ice takes care of all interactions with low-level
+#network programming interfaces and allows you to focus your efforts on
+#your application logic.
 
 #
 # python-ice package
 #
-%package -n %{pythonname}-%{?nameprefix}ice
-Summary: Python extension for Ice.
-Group: System Environment/Libraries
-Obsoletes: ice-python < 3.6
-Requires: lib%{?nameprefix}ice3.7-c++%{?_isa} = %{version}-%{release}
-Requires: %{pythonname}
-%description -n %{pythonname}-%{?nameprefix}ice
-This package contains a Python extension for communicating with Ice.
-
-Ice is a comprehensive RPC framework that helps you network your software
-with minimal effort. Ice takes care of all interactions with low-level
-network programming interfaces and allows you to focus your efforts on
-your application logic.
+#%package -n %{pythonname}-%{?nameprefix}ice
+#Summary: Python extension for Ice.
+#Group: System Environment/Libraries
+#Obsoletes: ice-python < 3.6
+#Requires: lib%{?nameprefix}ice3.7-c++%{?_isa} = %{version}-%{release}
+#Requires: %{pythonname}
+#%description -n %{pythonname}-%{?nameprefix}ice
+#This package contains a Python extension for communicating with Ice.
+#
+#Ice is a comprehensive RPC framework that helps you network your software
+#with minimal effort. Ice takes care of all interactions with low-level
+#network programming interfaces and allows you to focus your efforts on
+#your application logic.
 
 %if "%{dist}" == ".amzn2"
 #
@@ -459,6 +481,7 @@ your application logic.
 %endif #%{_host_cpu}
 
 %prep
+%setup -q -n ice-packaging-%{archive_dir_suffix} -T -b 1
 %setup -q -n ice-%{archive_dir_suffix} -a 1
 cp %{_builddir}/ice-%{archive_dir_suffix}/python %{_builddir}/ice-%{archive_dir_suffix}/python3 -rf
 
@@ -469,49 +492,45 @@ cp %{_builddir}/ice-%{archive_dir_suffix}/python %{_builddir}/ice-%{archive_dir_
 export CXXFLAGS="%{optflags}"
 export LDFLAGS="%{?__global_ldflags}"
 
-%ifarch %{_host_cpu}
-    make %{makebuildopts} PYTHON=python LANGUAGES="cpp java php python" srcs
+%ifnarch %{ix86}
+    make %{makebuildopts} LANGUAGES="cpp" srcs
     %if "%{dist}" == ".amzn2"
         make %{makebuildopts} PYTHON=python3 -C python3 srcs
     %endif
 %else
-    %ifarch %{ix86}
-        make %{makebuildopts} PLATFORMS=x86 LANGUAGES="cpp" srcs
-    %endif
+    make %{makebuildopts} PLATFORMS=x86 LANGUAGES="cpp" srcs
 %endif
 
 %install
 
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
     make           %{?_smp_mflags} %{makeinstallopts} install-slice
     make -C cpp    %{?_smp_mflags} %{makeinstallopts} install
-    make -C php    %{?_smp_mflags} %{makeinstallopts} install
-    make -C python %{?_smp_mflags} %{makeinstallopts} PYTHON=python install_pythondir=%{pythondir} install
+#    make -C php    %{?_smp_mflags} %{makeinstallopts} install
+#    make -C python %{?_smp_mflags} %{makeinstallopts} PYTHON=python install_pythondir=%{pythondir} install
     %if "%{dist}" == ".amzn2"
         make -C python3 %{?_smp_mflags} %{makeinstallopts} PYTHON=python3 install_pythondir=%{python3_sitearch} install
     %endif
-    make -C java   %{?_smp_mflags} %{makeinstallopts} install-icegridgui
+    #make -C java   %{?_smp_mflags} %{makeinstallopts} install-icegridgui
 %else
-    %ifarch %{ix86}
-        make -C cpp    %{?_smp_mflags} %{makeinstallopts} PLATFORMS=x86 install
-    %endif
+    make -C cpp    %{?_smp_mflags} %{makeinstallopts} PLATFORMS=x86 install
 %endif
 
 # Cleanup extra files
 rm -f %{buildroot}%{_bindir}/slice2confluence
 
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 
 #
 # php ice.ini
 #
-%if "%{dist}" == ".sles12"
-    mkdir -p %{buildroot}%{_sysconfdir}/php5/conf.d
-    cp -p %{rpmbuildfiles}/ice.ini %{buildroot}%{_sysconfdir}/php5/conf.d
-%else
-    mkdir -p %{buildroot}%{_sysconfdir}/php.d
-    cp -p %{rpmbuildfiles}/ice.ini %{buildroot}%{_sysconfdir}/php.d
-%endif
+#%if "%{dist}" == ".sles11" || "%{dist}" == ".sles12"
+#    mkdir -p %{buildroot}%{_sysconfdir}/php5/conf.d
+#    cp -p %{rpmbuildfiles}/ice.ini %{buildroot}%{_sysconfdir}/php5/conf.d
+#%else
+#    mkdir -p %{buildroot}%{_sysconfdir}/php.d
+#    cp -p %{rpmbuildfiles}/ice.ini %{buildroot}%{_sysconfdir}/php.d
+#%endif
 
 #
 # initrd files (for servers)
@@ -531,8 +550,8 @@ done
 #
 # IceGridGUI
 #
-mkdir -p %{buildroot}%{_bindir}
-cp -p %{rpmbuildfiles}/icegridgui %{buildroot}%{_bindir}/icegridgui
+#mkdir -p %{buildroot}%{_bindir}
+#cp -p %{rpmbuildfiles}/icegridgui %{buildroot}%{_bindir}/icegridgui
 
 %else
 
@@ -546,26 +565,26 @@ rm -rf %{buildroot}%{_datadir}/ice
 
 %endif # %{_host_cpu}
 
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 
 #
 # noarch file packages
 #
 
 %files -n %{?nameprefix}ice-slice
-%license LICENSE
-%license ICE_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %dir %{_datadir}/ice
 %{_datadir}/ice/slice
 
-%files -n %{?nameprefix}icegridgui
-%license LICENSE
-%license ICE_LICENSE
-%license %{rpmbuildfiles}/JGOODIES_LICENSE
-%doc %{rpmbuildfiles}/README
-%attr(755,root,root) %{_bindir}/icegridgui
-%{_javadir}/icegridgui.jar
+#%files -n %{?nameprefix}icegridgui
+#%license LICENSE
+#%license ICE_LICENSE
+#%license %{rpmbuildfiles}/JGOODIES_LICENSE
+#%doc %{rpmbuildfiles}/README
+#%attr(755,root,root) %{_bindir}/icegridgui
+#%{_javadir}/icegridgui.jar
 
 %endif # %{_host_cpu}
 
@@ -577,25 +596,25 @@ rm -rf %{buildroot}%{_datadir}/ice
 # Generate "ice-all-runtime" meta package as arch-specific
 #
 %files -n %{?nameprefix}ice-all-runtime
-%license LICENSE
-%license ICE_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 
 #
 # Generate "ice-all-devel" meta package as arch-specific
 #
 %files -n %{?nameprefix}ice-all-devel
-%license LICENSE
-%license ICE_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 
 #
 # libice-Mm-c++ package
 #
 %files -n lib%{?nameprefix}ice3.7-c++
-%license LICENSE
-%license ICE_LICENSE
-%license %{rpmbuildfiles}/MCPP_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
+%doc %{rpmbuildfiles}/MCPP_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_libdir}/libGlacier2.so.*
 %{_libdir}/libIce.so.*
@@ -607,15 +626,7 @@ rm -rf %{buildroot}%{_datadir}/ice
 %{_libdir}/libIceSSL.so.*
 %{_libdir}/libIceStorm.so.*
 %{_libdir}/libIceDB.so.*
-%{_libdir}/libGlacier2++11.so.*
-%{_libdir}/libIce++11.so.*
-%{_libdir}/libIceBox++11.so.*
-%{_libdir}/libIceDiscovery++11.so.*
-%{_libdir}/libIceGrid++11.so.*
-%{_libdir}/libIceLocatorDiscovery++11.so.*
-%{_libdir}/libIceSSL++11.so.*
-%{_libdir}/libIceStorm++11.so.*
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 %{_libdir}/libGlacier2CryptPermissionsVerifier.so.*
 %{_libdir}/libIceXML.so.*
 %endif
@@ -628,18 +639,14 @@ exit 0
 # icebox package
 #
 %files -n %{?nameprefix}icebox
-%license LICENSE
-%license ICE_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 %{_bindir}/icebox
-%{_bindir}/icebox++11
 %{_mandir}/man1/icebox.1*
 %else
-    %ifarch %{ix86}
 %{_bindir}/icebox32
-%{_bindir}/icebox32++11
-    %endif
 %endif
 %post -n %{?nameprefix}icebox -p /sbin/ldconfig
 %postun -n %{?nameprefix}icebox
@@ -650,8 +657,8 @@ exit 0
 # libice-c++devel package
 #
 %files -n lib%{?nameprefix}ice-c++-devel
-%license LICENSE
-%license ICE_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_libdir}/libGlacier2.so
 %{_libdir}/libIce.so
@@ -662,15 +669,7 @@ exit 0
 %{_libdir}/libIcePatch2.so
 %{_libdir}/libIceSSL.so
 %{_libdir}/libIceStorm.so
-%{_libdir}/libGlacier2++11.so
-%{_libdir}/libIce++11.so
-%{_libdir}/libIceBox++11.so
-%{_libdir}/libIceDiscovery++11.so
-%{_libdir}/libIceGrid++11.so
-%{_libdir}/libIceLocatorDiscovery++11.so
-%{_libdir}/libIceSSL++11.so
-%{_libdir}/libIceStorm++11.so
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 %{_includedir}/Glacier2
 %{_includedir}/Ice
 %{_includedir}/IceBox
@@ -685,8 +684,8 @@ exit 0
 # libicestorm-Mm package
 #
 %files -n lib%{?nameprefix}icestorm3.7
-%license LICENSE
-%license ICE_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_libdir}/libIceStormService.so.*
 %post -n lib%{?nameprefix}icestorm3.7 -p /sbin/ldconfig
@@ -694,14 +693,14 @@ exit 0
 /sbin/ldconfig
 exit 0
 
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 
 #
 # ice-compilers package
 #
 %files -n %{?nameprefix}ice-compilers
-%license LICENSE
-%license ICE_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/slice2cpp
 %{_mandir}/man1/slice2cpp.1*
@@ -711,8 +710,8 @@ exit 0
 %{_mandir}/man1/slice2html.1*
 %{_bindir}/slice2java
 %{_mandir}/man1/slice2java.1*
-%{_bindir}/slice2js
-%{_mandir}/man1/slice2js.1*
+#%{_bindir}/slice2js
+#%{_mandir}/man1/slice2js.1*
 %{_bindir}/slice2matlab
 %{_mandir}/man1/slice2matlab.1*
 %{_bindir}/slice2objc
@@ -728,8 +727,8 @@ exit 0
 # ice-utils package
 #
 %files -n %{?nameprefix}ice-utils
-%license LICENSE
-%license ICE_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/iceboxadmin
 %{_mandir}/man1/iceboxadmin.1*
@@ -754,8 +753,8 @@ exit 0
 # icegrid package
 #
 %files -n %{?nameprefix}icegrid
-%license LICENSE
-%license ICE_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/icegridnode
 %{_mandir}/man1/icegridnode.1*
@@ -836,8 +835,8 @@ exit 0
 # glacier2 package
 #
 %files -n %{?nameprefix}glacier2
-%license LICENSE
-%license ICE_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/glacier2router
 %{_mandir}/man1/glacier2router.1*
@@ -900,8 +899,8 @@ exit 0
 # icebridge package
 #
 %files -n %{?nameprefix}icebridge
-%license LICENSE
-%license ICE_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/icebridge
 %{_mandir}/man1/icebridge.1*
@@ -914,8 +913,8 @@ exit 0
 # icepatch2 package
 #
 %files -n %{?nameprefix}icepatch2
-%license LICENSE
-%license ICE_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/icepatch2server
 %{_mandir}/man1/icepatch2server.1*
@@ -927,34 +926,34 @@ exit 0
 #
 # php-ice package
 #
-%files -n php-%{?nameprefix}ice
-%license LICENSE
-%license ICE_LICENSE
-%doc %{rpmbuildfiles}/README
-%{phpdir}
-%{phplibdir}/ice.so
-%if "%{dist}" == ".sles12"
-%config(noreplace) %{_sysconfdir}/php5/conf.d/ice.ini
-%else
-%config(noreplace) %{_sysconfdir}/php.d/ice.ini
-%endif
+#%files -n php-%{?nameprefix}ice
+#%license LICENSE
+#%license ICE_LICENSE
+#%doc %{rpmbuildfiles}/README
+#%{phpdir}
+#%{phplibdir}/ice.so
+#%if "%{dist}" == ".sles11" || "%{dist}" == ".sles12"
+#%config(noreplace) %{_sysconfdir}/php5/conf.d/ice.ini
+#%else
+#%config(noreplace) %{_sysconfdir}/php.d/ice.ini
+#%endif
 
 #
 # python-ice package
 #
-%files -n %{pythonname}-%{?nameprefix}ice
-%license LICENSE
-%license ICE_LICENSE
-%doc %{rpmbuildfiles}/README
-%{pythondir}/*
+#%files -n %{pythonname}-%{?nameprefix}ice
+#%license LICENSE
+#%license ICE_LICENSE
+#%doc %{rpmbuildfiles}/README
+#%{pythondir}/*
 
 %if "%{dist}" == ".amzn2"
 #
 # python3-ice package
 #
 %files -n python3-%{?nameprefix}ice
-%license LICENSE
-%license ICE_LICENSE
+%doc %{rpmbuildfiles}/LICENSE
+%doc %{rpmbuildfiles}/ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{python3_sitearch}/*
 %endif
