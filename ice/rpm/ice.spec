@@ -70,8 +70,11 @@
    %define runpath embedded_runpath_prefix=%{_prefix}
 %endif
 
-%define makebuildopts CONFIGS="shared cpp11-shared" OPTIMIZE=yes V=1 %{runpath} %{?_smp_mflags}
-%define makeinstallopts CONFIGS="shared cpp11-shared" OPTIMIZE=yes V=1 %{runpath} DESTDIR=%{buildroot} prefix=%{_prefix} install_bindir=%{_bindir} install_libdir=%{_libdir} install_slicedir=%{_datadir}/ice/slice install_includedir=%{_includedir} install_mandir=%{_mandir} install_configdir=%{_datadir}/ice install_javadir=%{_javadir} install_phplibdir=%{phplibdir} install_phpdir=%{phpdir}
+#
+# Don't build slice2js and the C++11 mapping because of compiler errors.
+#
+%define makebuildopts CONFIGS="shared" OPTIMIZE=yes SKIP=slice2js V=1 %{runpath} %{?_smp_mflags}
+%define makeinstallopts CONFIGS="shared" OPTIMIZE=yes SKIP=slice2js V=1 %{runpath} DESTDIR=%{buildroot} prefix=%{_prefix} install_bindir=%{_bindir} install_libdir=%{_libdir} install_slicedir=%{_datadir}/ice/slice install_includedir=%{_includedir} install_mandir=%{_mandir} install_configdir=%{_datadir}/ice install_javadir=%{_javadir} install_phplibdir=%{phplibdir} install_phpdir=%{phpdir}
 
 Name: %{?nameprefix}ice
 Version: 3.7.2
@@ -102,7 +105,7 @@ BuildRequires: pkgconfig(expat), pkgconfig(lmdb), pkgconfig(mcpp), pkgconfig(ope
 %if %{systemd}
 BuildRequires: %{systemddevel}
 %endif
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 BuildRequires: pkgconfig(python-2.7), %{phpdevel}, %{javapackagestools}
 %if "%{dist}" == ".amzn2"
 BuildRequires: pkgconfig(python-3.7), python3-rpm-macros
@@ -120,7 +123,7 @@ Not used
 %debug_package
 %endif
 
-%ifarch %{_host_cpu} # We build noarch packages only on %{_host_cpu}
+%ifnarch %{ix86}
 
 #
 # ice-slice package
@@ -168,7 +171,7 @@ Summary: Ice run-time packages (meta package).
 Group: System Environment/Libraries
 Requires: %{?nameprefix}icebox%{?_isa} = %{version}-%{release}
 Requires: lib%{?nameprefix}icestorm3.7%{?_isa} = %{version}-%{release}
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 Requires: %{?nameprefix}glacier2%{?_isa} = %{version}-%{release}
 Requires: %{?nameprefix}icegrid%{?_isa} = %{version}-%{release}
 Requires: %{?nameprefix}icepatch2%{?_isa} = %{version}-%{release}
@@ -276,7 +279,7 @@ Summary: Libraries and headers for developing Ice applications in C++.
 Group: Development/Tools
 Obsoletes: ice-c++-devel < 3.6
 Requires: lib%{?nameprefix}ice3.7-c++%{?_isa} = %{version}-%{release}
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 Requires: %{?nameprefix}ice-compilers%{?_isa} = %{version}-%{release}
 %else
     %ifarch %{ix86}
@@ -293,7 +296,7 @@ with minimal effort. Ice takes care of all interactions with low-level
 network programming interfaces and allows you to focus your efforts on
 your application logic.
 
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 
 #
 # ice-compilers package
@@ -481,6 +484,7 @@ your application logic.
 %endif #%{_host_cpu}
 
 %prep
+%setup -q -n ice-packaging-%{archive_dir_suffix} -T -b 1
 %setup -q -n ice-%{archive_dir_suffix} -a 1
 cp %{_builddir}/ice-%{archive_dir_suffix}/python %{_builddir}/ice-%{archive_dir_suffix}/python3 -rf
 
@@ -491,20 +495,18 @@ cp %{_builddir}/ice-%{archive_dir_suffix}/python %{_builddir}/ice-%{archive_dir_
 export CXXFLAGS="%{optflags}"
 export LDFLAGS="%{?__global_ldflags}"
 
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
     make %{makebuildopts} PYTHON=python LANGUAGES="cpp java php python" srcs
     %if "%{dist}" == ".amzn2"
         make %{makebuildopts} PYTHON=python3 -C python3 srcs
     %endif
 %else
-    %ifarch %{ix86}
-        make %{makebuildopts} PLATFORMS=x86 LANGUAGES="cpp" srcs
-    %endif
+    make %{makebuildopts} PLATFORMS=x86 LANGUAGES="cpp" srcs
 %endif
 
 %install
 
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
     make           %{?_smp_mflags} %{makeinstallopts} install-slice
     make -C cpp    %{?_smp_mflags} %{makeinstallopts} install
     make -C php    %{?_smp_mflags} %{makeinstallopts} install
@@ -514,15 +516,13 @@ export LDFLAGS="%{?__global_ldflags}"
     %endif
     make -C java   %{?_smp_mflags} %{makeinstallopts} install-icegridgui
 %else
-    %ifarch %{ix86}
-        make -C cpp    %{?_smp_mflags} %{makeinstallopts} PLATFORMS=x86 install
-    %endif
+    make -C cpp    %{?_smp_mflags} %{makeinstallopts} PLATFORMS=x86 install
 %endif
 
 # Cleanup extra files
 rm -f %{buildroot}%{_bindir}/slice2confluence
 
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 
 #
 # php ice.ini
@@ -568,23 +568,23 @@ rm -rf %{buildroot}%{_datadir}/ice
 
 %endif # %{_host_cpu}
 
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 
 #
 # noarch file packages
 #
 
 %files -n %{?nameprefix}ice-slice
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %dir %{_datadir}/ice
 %{_datadir}/ice/slice
 
 %files -n %{?nameprefix}icegridgui
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
-%license %{rpmbuildfiles}/JGOODIES_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
+#%license %{rpmbuildfiles}/JGOODIES_LICENSE
 %doc %{rpmbuildfiles}/README
 %attr(755,root,root) %{_bindir}/icegridgui
 %{_javadir}/icegridgui.jar
@@ -599,25 +599,25 @@ rm -rf %{buildroot}%{_datadir}/ice
 # Generate "ice-all-runtime" meta package as arch-specific
 #
 %files -n %{?nameprefix}ice-all-runtime
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 
 #
 # Generate "ice-all-devel" meta package as arch-specific
 #
 %files -n %{?nameprefix}ice-all-devel
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 
 #
 # libice-Mm-c++ package
 #
 %files -n lib%{?nameprefix}ice3.7-c++
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
-%license %{rpmbuildfiles}/MCPP_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
+#%license %{rpmbuildfiles}/MCPP_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_libdir}/libGlacier2.so.*
 %{_libdir}/libIce.so.*
@@ -629,15 +629,7 @@ rm -rf %{buildroot}%{_datadir}/ice
 %{_libdir}/libIceSSL.so.*
 %{_libdir}/libIceStorm.so.*
 %{_libdir}/libIceDB.so.*
-%{_libdir}/libGlacier2++11.so.*
-%{_libdir}/libIce++11.so.*
-%{_libdir}/libIceBox++11.so.*
-%{_libdir}/libIceDiscovery++11.so.*
-%{_libdir}/libIceGrid++11.so.*
-%{_libdir}/libIceLocatorDiscovery++11.so.*
-%{_libdir}/libIceSSL++11.so.*
-%{_libdir}/libIceStorm++11.so.*
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 %{_libdir}/libGlacier2CryptPermissionsVerifier.so.*
 %{_libdir}/libIceXML.so.*
 %endif
@@ -650,18 +642,14 @@ exit 0
 # icebox package
 #
 %files -n %{?nameprefix}icebox
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 %{_bindir}/icebox
-%{_bindir}/icebox++11
 %{_mandir}/man1/icebox.1*
 %else
-    %ifarch %{ix86}
 %{_bindir}/icebox32
-%{_bindir}/icebox32++11
-    %endif
 %endif
 %post -n %{?nameprefix}icebox -p /sbin/ldconfig
 %postun -n %{?nameprefix}icebox
@@ -672,8 +660,8 @@ exit 0
 # libice-c++devel package
 #
 %files -n lib%{?nameprefix}ice-c++-devel
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_libdir}/libGlacier2.so
 %{_libdir}/libIce.so
@@ -684,15 +672,7 @@ exit 0
 %{_libdir}/libIcePatch2.so
 %{_libdir}/libIceSSL.so
 %{_libdir}/libIceStorm.so
-%{_libdir}/libGlacier2++11.so
-%{_libdir}/libIce++11.so
-%{_libdir}/libIceBox++11.so
-%{_libdir}/libIceDiscovery++11.so
-%{_libdir}/libIceGrid++11.so
-%{_libdir}/libIceLocatorDiscovery++11.so
-%{_libdir}/libIceSSL++11.so
-%{_libdir}/libIceStorm++11.so
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 %{_includedir}/Glacier2
 %{_includedir}/Ice
 %{_includedir}/IceBox
@@ -707,8 +687,8 @@ exit 0
 # libicestorm-Mm package
 #
 %files -n lib%{?nameprefix}icestorm3.7
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_libdir}/libIceStormService.so.*
 %post -n lib%{?nameprefix}icestorm3.7 -p /sbin/ldconfig
@@ -716,14 +696,14 @@ exit 0
 /sbin/ldconfig
 exit 0
 
-%ifarch %{_host_cpu}
+%ifnarch %{ix86}
 
 #
 # ice-compilers package
 #
 %files -n %{?nameprefix}ice-compilers
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/slice2cpp
 %{_mandir}/man1/slice2cpp.1*
@@ -733,8 +713,8 @@ exit 0
 %{_mandir}/man1/slice2html.1*
 %{_bindir}/slice2java
 %{_mandir}/man1/slice2java.1*
-%{_bindir}/slice2js
-%{_mandir}/man1/slice2js.1*
+#%{_bindir}/slice2js
+#%{_mandir}/man1/slice2js.1*
 %{_bindir}/slice2matlab
 %{_mandir}/man1/slice2matlab.1*
 %{_bindir}/slice2objc
@@ -750,8 +730,8 @@ exit 0
 # ice-utils package
 #
 %files -n %{?nameprefix}ice-utils
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/iceboxadmin
 %{_mandir}/man1/iceboxadmin.1*
@@ -776,8 +756,8 @@ exit 0
 # icegrid package
 #
 %files -n %{?nameprefix}icegrid
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/icegridnode
 %{_mandir}/man1/icegridnode.1*
@@ -858,8 +838,8 @@ exit 0
 # glacier2 package
 #
 %files -n %{?nameprefix}glacier2
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/glacier2router
 %{_mandir}/man1/glacier2router.1*
@@ -922,8 +902,8 @@ exit 0
 # icebridge package
 #
 %files -n %{?nameprefix}icebridge
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/icebridge
 %{_mandir}/man1/icebridge.1*
@@ -936,8 +916,8 @@ exit 0
 # icepatch2 package
 #
 %files -n %{?nameprefix}icepatch2
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{_bindir}/icepatch2server
 %{_mandir}/man1/icepatch2server.1*
@@ -950,8 +930,8 @@ exit 0
 # php-ice package
 #
 %files -n php-%{?nameprefix}ice
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{phpdir}
 %{phplibdir}/ice.so
@@ -965,8 +945,8 @@ exit 0
 # python-ice package
 #
 %files -n %{pythonname}-%{?nameprefix}ice
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{pythondir}/*
 
@@ -975,8 +955,8 @@ exit 0
 # python3-ice package
 #
 %files -n python3-%{?nameprefix}ice
-%doc %{_builddir}/ice-%{archive_dir_suffix}/LICENSE
-%doc %{_builddir}/ice-%{archive_dir_suffix}/ICE_LICENSE
+#%license LICENSE
+#%license ICE_LICENSE
 %doc %{rpmbuildfiles}/README
 %{python3_sitearch}/*
 %endif
