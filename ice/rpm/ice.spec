@@ -120,7 +120,7 @@ Not used
 %debug_package
 %endif
 
-%ifnarch %{ix86}
+%ifarch noarch
 
 #
 # ice-slice package
@@ -128,7 +128,6 @@ Not used
 %package -n %{?nameprefix}ice-slice
 Summary: Slice files for Ice.
 Group: System Environment/Libraries
-BuildArch: noarch
 %description -n %{?nameprefix}ice-slice
 This package contains Slice files used by the Ice framework.
 
@@ -492,6 +491,7 @@ cp %{_builddir}/ice-%{archive_dir_suffix}/python %{_builddir}/ice-%{archive_dir_
 export CXXFLAGS="%{optflags}"
 export LDFLAGS="%{?__global_ldflags}"
 
+%ifnarch noarch
 %ifnarch %{ix86}
     make %{makebuildopts} LANGUAGES="cpp" srcs
     %if "%{dist}" == ".amzn2"
@@ -500,25 +500,30 @@ export LDFLAGS="%{?__global_ldflags}"
 %else
     make %{makebuildopts} PLATFORMS=x86 LANGUAGES="cpp" srcs
 %endif
+%endif
 
 %install
 
-%ifnarch %{ix86}
+%ifarch noarch
     make           %{?_smp_mflags} %{makeinstallopts} install-slice
-    make -C cpp    %{?_smp_mflags} %{makeinstallopts} install
-#    make -C php    %{?_smp_mflags} %{makeinstallopts} install
-#    make -C python %{?_smp_mflags} %{makeinstallopts} PYTHON=python install_pythondir=%{pythondir} install
-    %if "%{dist}" == ".amzn2"
-        make -C python3 %{?_smp_mflags} %{makeinstallopts} PYTHON=python3 install_pythondir=%{python3_sitearch} install
-    %endif
-    #make -C java   %{?_smp_mflags} %{makeinstallopts} install-icegridgui
 %else
-    make -C cpp    %{?_smp_mflags} %{makeinstallopts} PLATFORMS=x86 install
+  %ifnarch %{ix86}
+      make -C cpp    %{?_smp_mflags} %{makeinstallopts} install
+  #    make -C php    %{?_smp_mflags} %{makeinstallopts} install
+  #    make -C python %{?_smp_mflags} %{makeinstallopts} PYTHON=python install_pythondir=%{pythondir} install
+      %if "%{dist}" == ".amzn2"
+          make -C python3 %{?_smp_mflags} %{makeinstallopts} PYTHON=python3 install_pythondir=%{python3_sitearch} install
+      %endif
+      #make -C java   %{?_smp_mflags} %{makeinstallopts} install-icegridgui
+  %else
+      make -C cpp    %{?_smp_mflags} %{makeinstallopts} PLATFORMS=x86 install
+  %endif
 %endif
 
 # Cleanup extra files
 rm -f %{buildroot}%{_bindir}/slice2confluence
 
+%ifnarch noarch
 %ifnarch %{ix86}
 
 #
@@ -564,8 +569,9 @@ rm -rf %{buildroot}%{_mandir}
 rm -rf %{buildroot}%{_datadir}/ice
 
 %endif # %{_host_cpu}
+%endif
 
-%ifnarch %{ix86}
+%ifarch noarch
 
 #
 # noarch file packages
@@ -586,7 +592,7 @@ rm -rf %{buildroot}%{_datadir}/ice
 #%attr(755,root,root) %{_bindir}/icegridgui
 #%{_javadir}/icegridgui.jar
 
-%endif # %{_host_cpu}
+%else
 
 #
 # arch-specific packages
@@ -959,6 +965,8 @@ exit 0
 %endif
 
 %endif #%{_host_cpu}
+
+%endif
 
 %changelog
 * Thu Nov 29 2018 Bernard Normier <bernard@zeroc.com> 3.7.2
