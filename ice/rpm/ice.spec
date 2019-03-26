@@ -143,23 +143,23 @@ your application logic.
 #
 # icegridgui package
 #
-%package -n %{?nameprefix}icegridgui
-Summary: IceGrid GUI admin client.
-Group: Applications/System
-BuildArch: noarch
-Obsoletes: ice-utils < 3.6, %{?nameprefix}ice-utils-java < 3.7
-Requires: java
-%description -n %{?nameprefix}icegridgui
-The IceGrid service helps you locate, deploy and manage Ice servers.
+#%package -n %{?nameprefix}icegridgui
+#Summary: IceGrid GUI admin client.
+#Group: Applications/System
+#BuildArch: noarch
+#Obsoletes: ice-utils < 3.6, %{?nameprefix}ice-utils-java < 3.7
+#Requires: java
+#%description -n %{?nameprefix}icegridgui
+#The IceGrid service helps you locate, deploy and manage Ice servers.
 
-IceGridGUI gives you complete control over your deployed applications.
-Activities such as starting a server or modifying a configuration setting
-are just a mouse click away.
+#IceGridGUI gives you complete control over your deployed applications.
+#Activities such as starting a server or modifying a configuration setting
+#are just a mouse click away.
 
-Ice is a comprehensive RPC framework that helps you network your software
-with minimal effort. Ice takes care of all interactions with low-level
-network programming interfaces and allows you to focus your efforts on
-your application logic.
+#Ice is a comprehensive RPC framework that helps you network your software
+#with minimal effort. Ice takes care of all interactions with low-level
+#network programming interfaces and allows you to focus your efforts on
+#your application logic.
 
 %endif
 
@@ -496,7 +496,7 @@ export CXXFLAGS="%{optflags}"
 export LDFLAGS="%{?__global_ldflags}"
 
 %ifnarch %{ix86}
-    make %{makebuildopts} PYTHON=python LANGUAGES="cpp java php python" srcs
+    make %{makebuildopts} PYTHON=python LANGUAGES="cpp php python" srcs
     %if "%{dist}" == ".amzn2"
         make %{makebuildopts} PYTHON=python3 -C python3 srcs
     %endif
@@ -514,7 +514,7 @@ export LDFLAGS="%{?__global_ldflags}"
     %if "%{dist}" == ".amzn2"
         make -C python3 %{?_smp_mflags} %{makeinstallopts} PYTHON=python3 install_pythondir=%{python3_sitearch} install
     %endif
-    make -C java   %{?_smp_mflags} %{makeinstallopts} install-icegridgui
+    #make -C java   %{?_smp_mflags} %{makeinstallopts} install-icegridgui
 %else
     make -C cpp    %{?_smp_mflags} %{makeinstallopts} PLATFORMS=x86 install
 %endif
@@ -581,13 +581,13 @@ rm -rf %{buildroot}%{_datadir}/ice
 %dir %{_datadir}/ice
 %{_datadir}/ice/slice
 
-%files -n %{?nameprefix}icegridgui
+#%files -n %{?nameprefix}icegridgui
 #%license LICENSE
 #%license ICE_LICENSE
 #%license %{rpmbuildfiles}/JGOODIES_LICENSE
-%doc %{rpmbuildfiles}/README
-%attr(755,root,root) %{_bindir}/icegridgui
-%{_javadir}/icegridgui.jar
+#%doc %{rpmbuildfiles}/README
+#%attr(755,root,root) %{_bindir}/icegridgui
+#%{_javadir}/icegridgui.jar
 
 %endif # %{_host_cpu}
 
