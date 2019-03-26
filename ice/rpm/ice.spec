@@ -550,8 +550,8 @@ done
 #
 # IceGridGUI
 #
-mkdir -p %{buildroot}%{_bindir}
-cp -p %{rpmbuildfiles}/icegridgui %{buildroot}%{_bindir}/icegridgui
+#mkdir -p %{buildroot}%{_bindir}
+#cp -p %{rpmbuildfiles}/icegridgui %{buildroot}%{_bindir}/icegridgui
 
 %else
 
