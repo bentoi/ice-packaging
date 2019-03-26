@@ -48,6 +48,7 @@
 %endif
 
 %if "%{dist}" == ".sles11"
+   %define systemd 0
    %define systemdpkg systemd-rpm-macros
    %define shadow shadow
 %endif
