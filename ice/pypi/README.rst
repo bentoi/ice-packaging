@@ -57,7 +57,7 @@ Documentation
 -------------
 
 We provide extensive `online documentation
-<https://doc.zeroc.com/display/Ice37>`_ for Ice, the Python extension, and the
+<https://doc.zeroc.com/ice/3.7>`_ for Ice, the Python extension, and the
 other Ice language mappings and services.
 
 Support
